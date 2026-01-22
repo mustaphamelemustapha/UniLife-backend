@@ -1,0 +1,32 @@
+[
+  {
+    "task": "READ MY BOOK",
+    "day": "Monday",
+    "priority": "medium"
+  },
+  {
+    "task": "biology",
+    "day": "Tuesday",
+    "priority": "high"
+  },
+  {
+    "task": "biology",
+    "day": "Monday",
+    "priority": "medium"
+  },
+  {
+    "task": "READ MY BOOK",
+    "day": "Sunday",
+    "priority": "medium"
+  },
+  {
+    "task": "MATHEMATICS",
+    "day": "Wednesday",
+    "priority": "low"
+  },
+  {
+    "task": "READ MY BOOK",
+    "day": "Thursday",
+    "priority": "medium"
+  }
+]
