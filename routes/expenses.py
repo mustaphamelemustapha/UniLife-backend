@@ -3,30 +3,36 @@ from pydantic import BaseModel
 import json
 import os
 
-router = APIRouter()
+router = APIRouter(prefix="/expenses", tags=["Expenses"])
 
-EXPENSES_FILE = "../frontend/expenses-tracker/expenses.json"
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+DATA_FILE = os.path.join(DATA_DIR, "expenses.json")
+
+# Ensure data folder & file exist
+os.makedirs(DATA_DIR, exist_ok=True)
+
+if not os.path.exists(DATA_FILE):
+    with open(DATA_FILE, "w") as f:
+        json.dump([], f)
 
 
 class Expense(BaseModel):
-    name: str
     amount: float
     category: str
 
 
 def load_expenses():
-    if not os.path.exists(EXPENSES_FILE):
-        return []
     try:
-        with open(EXPENSES_FILE, "r") as f:
+        with open(DATA_FILE, "r") as f:
             return json.load(f)
-    except:
+    except Exception:
         return []
 
 
-def save_expenses(expenses):
-    with open(EXPENSES_FILE, "w") as f:
-        json.dump(expenses, f, indent=2)
+def save_expenses(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=2)
 
 
 @router.get("/")
@@ -39,4 +45,4 @@ def add_expense(expense: Expense):
     expenses = load_expenses()
     expenses.append(expense.dict())
     save_expenses(expenses)
-    return {"success": True, "message": "Expense added!", "expense": expense.dict()}
+    return {"success": True}

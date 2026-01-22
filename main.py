@@ -4,18 +4,16 @@ from routes import study, expenses
 
 app = FastAPI(title="UniLife Backend")
 
-# ✅ CORS FIX (THIS IS THE KEY)
+# CORS (so frontend on another origin can access)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # allow frontend
-    allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Routes
-app.include_router(study.router, prefix="/study")
-app.include_router(expenses.router, prefix="/expenses")
+# Include routers
+app.include_router(study.router)
+app.include_router(expenses.router)
 
 
 @app.get("/")
