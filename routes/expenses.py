@@ -42,6 +42,7 @@ def get_expenses():
 
 @router.post("/")
 def add_expense(expense: Expense):
+    ...
     expenses = load_expenses()
     expenses.append(expense.dict())
     save_expenses(expenses)
