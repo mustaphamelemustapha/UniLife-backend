@@ -4,6 +4,7 @@ from routes import study, expenses
 
 app = FastAPI(title="UniLife Backend")
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -11,8 +12,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(study.router)
-app.include_router(expenses.router)
+# Include routers
+app.include_router(study.router, prefix="/study", tags=["Study"])
+app.include_router(expenses.router, prefix="/expenses", tags=["Expenses"])
 
 
 @app.get("/")
