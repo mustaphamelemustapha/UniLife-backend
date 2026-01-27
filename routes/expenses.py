@@ -1,20 +1,15 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import json
-import os
+from typing import List
 
-router = APIRouter(prefix="/expenses", tags=["Expenses"])
+router = APIRouter()
 
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-DATA_DIR = os.path.join(BASE_DIR, "data")
-DATA_FILE = os.path.join(DATA_DIR, "expenses.json")
+# ================== DATA STRUCTURE ==================
+# In-memory storage
+expenses = []
+next_id = 1  # auto-increment id for each expense
 
-# Ensure data folder & file exist
-os.makedirs(DATA_DIR, exist_ok=True)
-
-if not os.path.exists(DATA_FILE):
-    with open(DATA_FILE, "w") as f:
-        json.dump([], f)
+# ================== MODELS ==================
 
 
 class Expense(BaseModel):
@@ -22,28 +17,46 @@ class Expense(BaseModel):
     category: str
 
 
-def load_expenses():
-    try:
-        with open(DATA_FILE, "r") as f:
-            return json.load(f)
-    except Exception:
-        return []
+class ExpenseOut(Expense):
+    id: int
+
+# ================== GET ALL EXPENSES ==================
 
 
-def save_expenses(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=2)
-
-
-@router.get("/")
+@router.get("/expenses/", response_model=List[ExpenseOut])
 def get_expenses():
-    return load_expenses()
+    return expenses
+
+# ================== ADD EXPENSE ==================
 
 
-@router.post("/")
+@router.post("/expenses/", response_model=ExpenseOut)
 def add_expense(expense: Expense):
-    ...
-    expenses = load_expenses()
-    expenses.append(expense.dict())
-    save_expenses(expenses)
-    return {"success": True}
+    global next_id
+    exp_dict = expense.dict()
+    exp_dict["id"] = next_id
+    next_id += 1
+    expenses.append(exp_dict)
+    return exp_dict
+
+# ================== DELETE EXPENSE ==================
+
+
+@router.delete("/expenses/{expense_id}")
+def delete_expense(expense_id: int):
+    global expenses
+    for exp in expenses:
+        if exp["id"] == expense_id:
+            expenses = [e for e in expenses if e["id"] != expense_id]
+            return {"message": "Expense deleted"}
+    raise HTTPException(status_code=404, detail="Expense not found")
+
+# ================== RESET EXPENSES ==================
+
+
+@router.post("/reset")
+def reset_expenses():
+    global expenses, next_id
+    expenses = []
+    next_id = 1
+    return {"message": "All expenses reset"}
