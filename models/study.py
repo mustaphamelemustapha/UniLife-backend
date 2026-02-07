@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 from database import Base
 
 
@@ -6,6 +7,9 @@ class StudyPlan(Base):
     __tablename__ = "study_plans"
 
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String)
-    subject = Column(String)
-    duration = Column(Integer)
+    task = Column(String, nullable=False)
+    day = Column(String, nullable=False)
+    priority = Column(String, nullable=False)
+
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship("User", back_populates="study_plans")

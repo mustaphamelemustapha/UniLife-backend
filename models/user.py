@@ -12,3 +12,4 @@ class User(Base):
 
     # NEW: list of expenses this user owns
     expenses = relationship("Expense", back_populates="user")
+    study_plans = relationship("StudyPlan", back_populates="user")

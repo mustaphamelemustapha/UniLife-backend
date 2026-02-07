@@ -51,16 +51,16 @@ class ExpenseRead(BaseModel):
 
 
 class StudyPlanCreate(BaseModel):
-    title: str
-    subject: str
-    duration: int
+    task: str
+    day: str
+    priority: str
 
 
 class StudyPlanRead(BaseModel):
     id: int
-    title: str
-    subject: str
-    duration: int
+    task: str
+    day: str
+    priority: str
 
     class Config:
         from_attributes = True

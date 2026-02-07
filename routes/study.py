@@ -1,94 +1,95 @@
-from fastapi import APIRouter, HTTPException, Body, Depends
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
 from dependencies import get_current_user
-from models.user import User
-from pydantic import BaseModel
-import json
-import os
+from database import get_db
+from models import StudyPlan, User
+from schemas import StudyPlanCreate, StudyPlanRead
 
 router = APIRouter(
     prefix="/study",
     tags=["Study"]
 )
 
-DATA_FILE = os.path.join(
-    os.path.dirname(__file__),
-    "../data/study.json"
-)
-
-# Ensure data directory exists
-os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-if not os.path.exists(DATA_FILE):
-    with open(DATA_FILE, "w") as f:
-        json.dump([], f)
-
-
-class Plan(BaseModel):
-    task: str
-    day: str
-    priority: str
-
-
-def load_plans():
-    with open(DATA_FILE, "r") as f:
-        return json.load(f)
-
-
-def save_plans(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=2)
-
 # ================= GET ALL PLANS =================
 
 
-@router.get("/")
-def get_plans(current_user: User = Depends(get_current_user)):
-    return load_plans()
+@router.get("/", response_model=list[StudyPlanRead])
+def get_plans(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return db.query(StudyPlan).filter(StudyPlan.user_id == current_user.id).all()
 
 # ================= ADD PLAN =================
 
 
-@router.post("/")
-def add_plan(plan: Plan, current_user: User = Depends(get_current_user)):
-    plans = load_plans()
-    plan_id = max([p.get("id", 0) for p in plans], default=0) + 1
-    plan_dict = plan.dict()
-    plan_dict["id"] = plan_id
-    plans.append(plan_dict)
-    save_plans(plans)
-    return {"success": True, "id": plan_id}
+@router.post("/", response_model=StudyPlanRead)
+def add_plan(
+    plan: StudyPlanCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db_plan = StudyPlan(
+        task=plan.task,
+        day=plan.day,
+        priority=plan.priority,
+        user_id=current_user.id
+    )
+    db.add(db_plan)
+    db.commit()
+    db.refresh(db_plan)
+    return db_plan
 
 # ================= UPDATE PLAN =================
 
 
-@router.put("/{plan_id}")
-def update_plan(plan_id: int, plan: Plan, current_user: User = Depends(get_current_user)):
-    plans = load_plans()
-    for p in plans:
-        if p.get("id") == plan_id:
-            p.update(plan.dict())
-            save_plans(plans)
-            return {"success": True}
-    raise HTTPException(status_code=404, detail="Plan not found")
+@router.put("/{plan_id}", response_model=StudyPlanRead)
+def update_plan(
+    plan_id: int,
+    plan: StudyPlanCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db_plan = db.query(StudyPlan).filter(
+        StudyPlan.id == plan_id,
+        StudyPlan.user_id == current_user.id
+    ).first()
+    if not db_plan:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    db_plan.task = plan.task
+    db_plan.day = plan.day
+    db_plan.priority = plan.priority
+    db.commit()
+    db.refresh(db_plan)
+    return db_plan
 
 # ================= DELETE PLAN =================
 
 
 @router.delete("/{plan_id}")
-def delete_plan(plan_id: int, current_user: User = Depends(get_current_user)):
-    plans = load_plans()
-    new_plans = [p for p in plans if p.get("id") != plan_id]
-    if len(new_plans) == len(plans):
+def delete_plan(
+    plan_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db_plan = db.query(StudyPlan).filter(
+        StudyPlan.id == plan_id,
+        StudyPlan.user_id == current_user.id
+    ).first()
+    if not db_plan:
         raise HTTPException(status_code=404, detail="Plan not found")
-    save_plans(new_plans)
+    db.delete(db_plan)
+    db.commit()
     return {"success": True}
 
 # ================= RESET PLANS =================
 
 
 @router.post("/reset/")
-def reset_plans(plans: list[dict] = Body(...), current_user: User = Depends(get_current_user)):
-    """
-    Reset all plans. Accepts a JSON array of plans in the body.
-    """
-    save_plans(plans)
+def reset_plans(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db.query(StudyPlan).filter(StudyPlan.user_id == current_user.id).delete()
+    db.commit()
     return {"success": True}
