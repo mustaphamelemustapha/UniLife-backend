@@ -1,62 +1,43 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import List
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from database import get_db
+from models import Expense
+from schemas import ExpenseCreate, ExpenseRead
 
 router = APIRouter()
 
-# ================== DATA STRUCTURE ==================
-# In-memory storage
-expenses = []
-next_id = 1  # auto-increment id for each expense
 
-# ================== MODELS ==================
+@router.get("/expenses/", response_model=list[ExpenseRead])
+def get_expenses(db: Session = Depends(get_db)):
+    return db.query(Expense).all()
 
 
-class Expense(BaseModel):
-    amount: float
-    category: str
-
-
-class ExpenseOut(Expense):
-    id: int
-
-# ================== GET ALL EXPENSES ==================
-
-
-@router.get("/expenses/", response_model=List[ExpenseOut])
-def get_expenses():
-    return expenses
-
-# ================== ADD EXPENSE ==================
-
-
-@router.post("/expenses/", response_model=ExpenseOut)
-def add_expense(expense: Expense):
-    global next_id
-    exp_dict = expense.dict()
-    exp_dict["id"] = next_id
-    next_id += 1
-    expenses.append(exp_dict)
-    return exp_dict
-
-# ================== DELETE EXPENSE ==================
+@router.post("/expenses/", response_model=ExpenseRead)
+def add_expense(expense: ExpenseCreate, db: Session = Depends(get_db)):
+    new_expense = Expense(
+        title=expense.title,
+        amount=expense.amount,
+        user_id=1  # TEMP user (we’ll fix auth fully next)
+    )
+    db.add(new_expense)
+    db.commit()
+    db.refresh(new_expense)
+    return new_expense
 
 
 @router.delete("/expenses/{expense_id}")
-def delete_expense(expense_id: int):
-    global expenses
-    for exp in expenses:
-        if exp["id"] == expense_id:
-            expenses = [e for e in expenses if e["id"] != expense_id]
-            return {"message": "Expense deleted"}
-    raise HTTPException(status_code=404, detail="Expense not found")
+def delete_expense(expense_id: int, db: Session = Depends(get_db)):
+    expense = db.query(Expense).filter(Expense.id == expense_id).first()
+    if not expense:
+        raise HTTPException(status_code=404, detail="Expense not found")
 
-# ================== RESET EXPENSES ==================
+    db.delete(expense)
+    db.commit()
+    return {"detail": "Expense deleted"}
 
 
-@router.post("/reset")
-def reset_expenses():
-    global expenses, next_id
-    expenses = []
-    next_id = 1
-    return {"message": "All expenses reset"}
+@router.post("/expenses/reset/")
+def reset_expenses(db: Session = Depends(get_db)):
+    db.query(Expense).delete()
+    db.commit()
+    return {"detail": "All expenses reset"}

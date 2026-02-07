@@ -1,9 +1,14 @@
-from fastapi import APIRouter, HTTPException, Body
+from fastapi import APIRouter, HTTPException, Body, Depends
+from dependencies import get_current_user
+from models.user import User
 from pydantic import BaseModel
 import json
 import os
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/study",
+    tags=["Study"]
+)
 
 DATA_FILE = os.path.join(
     os.path.dirname(__file__),
@@ -36,14 +41,14 @@ def save_plans(data):
 
 
 @router.get("/")
-def get_plans():
+def get_plans(current_user: User = Depends(get_current_user)):
     return load_plans()
 
 # ================= ADD PLAN =================
 
 
 @router.post("/")
-def add_plan(plan: Plan):
+def add_plan(plan: Plan, current_user: User = Depends(get_current_user)):
     plans = load_plans()
     plan_id = max([p.get("id", 0) for p in plans], default=0) + 1
     plan_dict = plan.dict()
@@ -56,7 +61,7 @@ def add_plan(plan: Plan):
 
 
 @router.put("/{plan_id}")
-def update_plan(plan_id: int, plan: Plan):
+def update_plan(plan_id: int, plan: Plan, current_user: User = Depends(get_current_user)):
     plans = load_plans()
     for p in plans:
         if p.get("id") == plan_id:
@@ -69,7 +74,7 @@ def update_plan(plan_id: int, plan: Plan):
 
 
 @router.delete("/{plan_id}")
-def delete_plan(plan_id: int):
+def delete_plan(plan_id: int, current_user: User = Depends(get_current_user)):
     plans = load_plans()
     new_plans = [p for p in plans if p.get("id") != plan_id]
     if len(new_plans) == len(plans):
@@ -81,7 +86,7 @@ def delete_plan(plan_id: int):
 
 
 @router.post("/reset/")
-def reset_plans(plans: list[dict] = Body(...)):
+def reset_plans(plans: list[dict] = Body(...), current_user: User = Depends(get_current_user)):
     """
     Reset all plans. Accepts a JSON array of plans in the body.
     """
