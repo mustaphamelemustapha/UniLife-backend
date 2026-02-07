@@ -5,3 +5,4 @@ sqlalchemy
 passlib
 PyJWT
 email-validator
+psycopg[binary]
