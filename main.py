@@ -20,13 +20,8 @@ app = FastAPI(title="UniLife Backend", version="0.1.0")
 # CORS: allow local frontend + Render domain. Adjust as needed.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:5500",
-        "https://unilife-backend.onrender.com",
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
