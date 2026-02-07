@@ -6,3 +6,4 @@ passlib
 PyJWT
 email-validator
 psycopg[binary]
+resend

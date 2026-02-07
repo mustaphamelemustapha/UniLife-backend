@@ -11,9 +11,10 @@ from database import Base, engine
 from models.user import User
 from models.expense import Expense
 from models.study import StudyPlan
+from models.password_reset import PasswordResetToken
 
 # 👇 ROUTERS
-from routes import expenses, study, auth, admin
+from routes import expenses, study, auth, admin, password_reset
 
 app = FastAPI(title="UniLife Backend", version="0.1.0")
 
@@ -34,6 +35,7 @@ app.include_router(auth.router)
 app.include_router(expenses.router)
 app.include_router(study.router)
 app.include_router(admin.router)
+app.include_router(password_reset.router)
 
 # =========================
 # Swagger JWT Configuration
