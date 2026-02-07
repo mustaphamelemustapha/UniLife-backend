@@ -1,16 +1,20 @@
-from pydantic import BaseModel, EmailStr
+from typing import Annotated
+from pydantic import BaseModel, EmailStr, StringConstraints
 
 # ========= USER =========
 
 
+PasswordStr = Annotated[str, StringConstraints(min_length=6, max_length=72)]
+
+
 class UserCreate(BaseModel):
     email: EmailStr
-    password: str
+    password: PasswordStr
 
 
 class UserLogin(BaseModel):
     email: EmailStr
-    password: str
+    password: PasswordStr
 
 
 class UserRead(BaseModel):
