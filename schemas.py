@@ -64,3 +64,23 @@ class StudyPlanRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ========= ADMIN =========
+
+
+class AdminExpenseRead(BaseModel):
+    id: int
+    category: str
+    amount: float
+    user_id: int
+    user_email: EmailStr
+
+
+class AdminStudyRead(BaseModel):
+    id: int
+    task: str
+    day: str
+    priority: str
+    user_id: int
+    user_email: EmailStr

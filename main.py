@@ -13,7 +13,7 @@ from models.expense import Expense
 from models.study import StudyPlan
 
 # 👇 ROUTERS
-from routes import expenses, study, auth
+from routes import expenses, study, auth, admin
 
 app = FastAPI(title="UniLife Backend", version="0.1.0")
 
@@ -38,6 +38,7 @@ Base.metadata.create_all(bind=engine)
 app.include_router(auth.router)
 app.include_router(expenses.router)
 app.include_router(study.router)
+app.include_router(admin.router)
 
 # =========================
 # Swagger JWT Configuration
@@ -63,9 +64,9 @@ def custom_openapi():
         }
     }
 
-    # Protect auth/me + expenses + study endpoints
+    # Protect auth/me + expenses + study + admin endpoints
     for path in openapi_schema["paths"]:
-        if path.startswith("/expenses") or path.startswith("/study") or path == "/me":
+        if path.startswith("/expenses") or path.startswith("/study") or path == "/me" or path.startswith("/admin"):
             for method in openapi_schema["paths"][path]:
                 openapi_schema["paths"][path][method]["security"] = [
                     {"BearerAuth": []}
