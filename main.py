@@ -63,9 +63,9 @@ def custom_openapi():
         }
     }
 
-    # Protect expenses + study endpoints
+    # Protect auth/me + expenses + study endpoints
     for path in openapi_schema["paths"]:
-        if path.startswith("/expenses") or path.startswith("/study"):
+        if path.startswith("/expenses") or path.startswith("/study") or path == "/me":
             for method in openapi_schema["paths"][path]:
                 openapi_schema["paths"][path][method]["security"] = [
                     {"BearerAuth": []}

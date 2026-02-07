@@ -1,10 +1,11 @@
 from passlib.context import CryptContext
-from schemas import UserCreate, UserLogin, Token
+from schemas import UserCreate, UserLogin, Token, UserRead
 from models.user import User
 from database import get_db
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from jwt_utils import create_access_token
+from dependencies import get_current_user
 
 # Use a builtin hash to avoid bcrypt backend issues on Render
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
@@ -50,3 +51,9 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 
     access_token = create_access_token({"sub": db_user.email})
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+# CURRENT USER
+@router.get("/me", response_model=UserRead)
+def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
