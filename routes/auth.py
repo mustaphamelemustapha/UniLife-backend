@@ -6,7 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from jwt_utils import create_access_token
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Use a builtin hash to avoid bcrypt backend issues on Render
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 router = APIRouter()
 
