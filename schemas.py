@@ -21,6 +21,9 @@ class UserLogin(BaseModel):
 class UserRead(BaseModel):
     id: int
     email: EmailStr
+    display_name: str | None = None
+    avatar_url: str | None = None
+    dark_mode: int | None = 0
 
     class Config:
         from_attributes = True
@@ -29,6 +32,12 @@ class UserRead(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class UserProfileUpdate(BaseModel):
+    display_name: str | None = None
+    avatar_url: str | None = None
+    dark_mode: int | None = 0
 
 
 # ========= EXPENSE =========

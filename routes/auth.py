@@ -1,5 +1,5 @@
 from passlib.context import CryptContext
-from schemas import UserCreate, UserLogin, Token, UserRead
+from schemas import UserCreate, UserLogin, Token, UserRead, UserProfileUpdate
 from models.user import User
 from database import get_db
 from fastapi import APIRouter, Depends, HTTPException
@@ -56,4 +56,23 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 # CURRENT USER
 @router.get("/me", response_model=UserRead)
 def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+@router.get("/profile", response_model=UserRead)
+def get_profile(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+@router.put("/profile", response_model=UserRead)
+def update_profile(
+    payload: UserProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    current_user.display_name = payload.display_name
+    current_user.avatar_url = payload.avatar_url
+    current_user.dark_mode = payload.dark_mode or 0
+    db.commit()
+    db.refresh(current_user)
     return current_user

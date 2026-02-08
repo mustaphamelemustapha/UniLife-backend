@@ -62,12 +62,13 @@ def custom_openapi():
         }
     }
 
-    # Protect auth/me + expenses + study + admin + analytics endpoints
+    # Protect auth/me + profile + expenses + study + admin + analytics endpoints
     for path in openapi_schema["paths"]:
         if (
             path.startswith("/expenses")
             or path.startswith("/study")
             or path == "/me"
+            or path == "/profile"
             or path.startswith("/admin")
             or path.startswith("/analytics")
         ):
