@@ -70,9 +70,12 @@ def update_profile(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    current_user.display_name = payload.display_name
-    current_user.avatar_url = payload.avatar_url
-    current_user.dark_mode = payload.dark_mode or 0
+    if payload.display_name is not None:
+        current_user.display_name = payload.display_name
+    if payload.avatar_url is not None:
+        current_user.avatar_url = payload.avatar_url
+    if payload.dark_mode is not None:
+        current_user.dark_mode = payload.dark_mode
     db.commit()
     db.refresh(current_user)
     return current_user
