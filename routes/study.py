@@ -33,6 +33,8 @@ def add_plan(
         task=plan.task,
         day=plan.day,
         priority=plan.priority,
+        date=plan.date,
+        time=plan.time,
         user_id=current_user.id
     )
     db.add(db_plan)
@@ -59,6 +61,8 @@ def update_plan(
     db_plan.task = plan.task
     db_plan.day = plan.day
     db_plan.priority = plan.priority
+    db_plan.date = plan.date
+    db_plan.time = plan.time
     db.commit()
     db.refresh(db_plan)
     return db_plan

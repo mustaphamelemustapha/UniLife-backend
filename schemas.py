@@ -65,6 +65,8 @@ class StudyPlanCreate(BaseModel):
     task: str
     day: str
     priority: str
+    date: str | None = None
+    time: str | None = None
 
 
 class StudyPlanRead(BaseModel):
@@ -72,6 +74,8 @@ class StudyPlanRead(BaseModel):
     task: str
     day: str
     priority: str
+    date: str | None = None
+    time: str | None = None
 
     class Config:
         from_attributes = True
