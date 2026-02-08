@@ -14,7 +14,7 @@ from models.study import StudyPlan
 from models.password_reset import PasswordResetToken
 
 # 👇 ROUTERS
-from routes import expenses, study, auth, admin, password_reset, analytics
+from routes import expenses, study, auth, admin, password_reset, analytics, reminders
 
 app = FastAPI(title="UniLife Backend", version="0.1.0")
 
@@ -37,6 +37,7 @@ app.include_router(study.router)
 app.include_router(admin.router)
 app.include_router(password_reset.router)
 app.include_router(analytics.router)
+app.include_router(reminders.router)
 
 # =========================
 # Swagger JWT Configuration
@@ -62,7 +63,7 @@ def custom_openapi():
         }
     }
 
-    # Protect auth/me + profile + expenses + study + admin + analytics endpoints
+    # Protect auth/me + profile + expenses + study + admin + analytics + reminders endpoints
     for path in openapi_schema["paths"]:
         if (
             path.startswith("/expenses")
@@ -71,6 +72,7 @@ def custom_openapi():
             or path == "/profile"
             or path.startswith("/admin")
             or path.startswith("/analytics")
+            or path.startswith("/reminders")
         ):
             for method in openapi_schema["paths"][path]:
                 openapi_schema["paths"][path][method]["security"] = [

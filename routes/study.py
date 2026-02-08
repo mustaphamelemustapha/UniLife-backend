@@ -4,6 +4,7 @@ from dependencies import get_current_user
 from database import get_db
 from models import StudyPlan, User
 from schemas import StudyPlanCreate, StudyPlanRead
+from datetime import datetime
 
 router = APIRouter(
     prefix="/study",
@@ -29,12 +30,20 @@ def add_plan(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    remind_at = None
+    if plan.date and plan.time:
+        try:
+            remind_at = datetime.fromisoformat(f"{plan.date}T{plan.time}")
+        except ValueError:
+            remind_at = None
     db_plan = StudyPlan(
         task=plan.task,
         day=plan.day,
         priority=plan.priority,
         date=plan.date,
         time=plan.time,
+        remind_at=remind_at,
+        reminder_sent=False,
         user_id=current_user.id
     )
     db.add(db_plan)
@@ -58,11 +67,20 @@ def update_plan(
     ).first()
     if not db_plan:
         raise HTTPException(status_code=404, detail="Plan not found")
+    remind_at = None
+    if plan.date and plan.time:
+        try:
+            remind_at = datetime.fromisoformat(f"{plan.date}T{plan.time}")
+        except ValueError:
+            remind_at = None
     db_plan.task = plan.task
     db_plan.day = plan.day
     db_plan.priority = plan.priority
     db_plan.date = plan.date
     db_plan.time = plan.time
+    db_plan.remind_at = remind_at
+    db_plan.reminder_sent = False
+    db_plan.reminder_sent_at = None
     db.commit()
     db.refresh(db_plan)
     return db_plan
