@@ -35,6 +35,7 @@ def list_expenses(
             "id": expense.id,
             "category": expense.category,
             "amount": expense.amount,
+            "created_at": expense.created_at,
             "user_id": user.id,
             "user_email": user.email
         }

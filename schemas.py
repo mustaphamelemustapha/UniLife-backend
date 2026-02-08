@@ -1,4 +1,5 @@
 from typing import Annotated
+from datetime import datetime
 from pydantic import BaseModel, EmailStr, StringConstraints
 
 # ========= USER =========
@@ -42,6 +43,7 @@ class ExpenseRead(BaseModel):
     id: int
     category: str
     amount: float
+    created_at: datetime
 
     class Config:
         from_attributes = True
@@ -73,6 +75,7 @@ class AdminExpenseRead(BaseModel):
     id: int
     category: str
     amount: float
+    created_at: datetime
     user_id: int
     user_email: EmailStr
 
